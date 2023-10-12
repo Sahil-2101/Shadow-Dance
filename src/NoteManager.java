@@ -17,7 +17,7 @@ public class NoteManager {
     private final Image RIGHT_NOTE_HOLD;
     private final Image UP_NOTE_HOLD;
     private final Image DOWN_NOTE_HOLD;
-    private int normalOrHold = 0;
+    public int normalOrHold = 0;
     private int FrameCount;
     public int recOver = 0, noteDistance, frameSpeed = 2;
     public NoteManager(){
@@ -32,11 +32,12 @@ public class NoteManager {
         DOWN_NOTE_HOLD = new Image("res/holdNoteDown.png");
     }
     //checking when the note is pressed what is the position of the note image
-    public void notePressed(int noteNC, int noteNCTrav, int noteHC, int noteHCTrav, int[] noteNormal, int[] noteHold){
+    public void notePressed(int noteNC, int noteNCTrav, int noteHC, int noteHCTrav, int[] noteNormal, int[] noteHold,
+                             int frameCount){
         // checking all the normal notes to find which need to be displayed
         while(noteNC > noteNCTrav){
-            if(noteNormal[noteNCTrav] <= FrameCount &&
-                    ((100+((FrameCount - noteNormal[noteNCTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
+            if(noteNormal[noteNCTrav] <= frameCount &&
+                    ((100+((frameCount - noteNormal[noteNCTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
                 normalOrHold = 1;
                 recOver++;
                 break;
@@ -45,31 +46,31 @@ public class NoteManager {
         }
         //removing the normal note present if the note was clicked
         if (normalOrHold == 1) {
-            noteDistance = laneCenter - (100 + ((FrameCount - noteNormal[noteNCTrav]) * frameSpeed));
+            noteDistance = laneCenter - (100 + ((frameCount - noteNormal[noteNCTrav]) * frameSpeed));
             noteNormal[noteNCTrav] = placeholderValue;
             normalOrHold = 0;
         }
         // now checking the same for hold notes
         else {
             while(noteHC > noteHCTrav){
-                if(noteHold[noteHCTrav] <= FrameCount &&
-                        ((24+((FrameCount - noteHold[noteHCTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
+                if(noteHold[noteHCTrav] <= frameCount &&
+                        ((24+((frameCount - noteHold[noteHCTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
                     normalOrHold = -1;
                     break;
                 }
                 noteHCTrav++;
             }
             if (normalOrHold == -1) {
-                noteDistance = laneCenter - (24 + ((FrameCount - noteHold[noteHCTrav]) * frameSpeed) + 82);
+                noteDistance = laneCenter - (24 + ((frameCount - noteHold[noteHCTrav]) * frameSpeed) + 82);
             }
         }
     }
 
-    public void noteReleased(int noteHC, int noteHCTrav, int[] noteHold){
+    public void noteReleased(int noteHC, int noteHCTrav, int[] noteHold, int frameCount){
         //if the note was released where was it positioned
         while(noteHC > noteHCTrav){
-            if(noteHold[noteHCTrav] <= FrameCount &&
-                    ((24+((FrameCount - noteHold[noteHCTrav])*frameSpeed)-82) <= WINDOW_HEIGHT)){
+            if(noteHold[noteHCTrav] <= frameCount &&
+                    ((24+((frameCount - noteHold[noteHCTrav])*frameSpeed)-82) <= WINDOW_HEIGHT)){
                 recOver++;
                 break;
             }
@@ -77,36 +78,35 @@ public class NoteManager {
         }
         normalOrHold = 0;
         //finding the distance accordingly
-        noteDistance = laneCenter - (24+((FrameCount - noteHold[noteHCTrav])*frameSpeed)-82);
+        noteDistance = laneCenter - (24+((frameCount - noteHold[noteHCTrav])*frameSpeed)-82);
         noteHold[noteHCTrav] = placeholderValue;
     }
     //if the note comes in the frame rate then drawing the note
-    public void noteNDraw(int noteNTrav, int[] noteNormal, Image dirNote, int noteX){
-        if(noteNormal[noteNTrav] <= FrameCount &&
-                ((100+((FrameCount - noteNormal[noteNTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
-            dirNote.draw(noteX, 100+((FrameCount - noteNormal[noteNTrav])*frameSpeed));
+    public void noteNDraw(int noteNTrav, int[] noteNormal, Image dirNote, int noteX, int frameCount){
+        if(noteNormal[noteNTrav] <= frameCount &&
+                ((100+((frameCount - noteNormal[noteNTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
+            dirNote.draw(noteX, 100+((frameCount - noteNormal[noteNTrav])*frameSpeed));
         }
         //if the note goes out of the window height then remove the note and count it as a miss
-        if(100+((FrameCount - noteNormal[noteNTrav])*frameSpeed) == WINDOW_HEIGHT){
+        if((100+((frameCount - noteNormal[noteNTrav])*frameSpeed) <= WINDOW_HEIGHT + 2) &&
+                (100+((frameCount - noteNormal[noteNTrav])*frameSpeed) >= WINDOW_HEIGHT)){
             noteDistance = arbitVal;
+            noteNormal[noteNTrav] = placeholderValue;
             recOver++;
         }
     }
     //if the hold note comes in the frame rate then draw the hold note
-    public void noteHDraw(int noteHTrav, int[] noteHold, Image dirNote, int noteX){
-        if(noteHold[noteHTrav] <= FrameCount &&
-                ((24+((FrameCount - noteHold[noteHTrav])*frameSpeed)-82) <= WINDOW_HEIGHT)){
-            dirNote.draw(noteX, 24+((FrameCount - noteHold[noteHTrav])*frameSpeed));
+    public void noteHDraw(int noteHTrav, int[] noteHold, Image dirNote, int noteX, int frameCount){
+        if(noteHold[noteHTrav] <= frameCount &&
+                ((24+((frameCount - noteHold[noteHTrav])*frameSpeed)-82) <= WINDOW_HEIGHT)){
+            dirNote.draw(noteX, 24+((frameCount - noteHold[noteHTrav])*frameSpeed));
         }
         //if the bottom note goes out of the window unpressed then count it as a miss
-        if((24+((FrameCount - noteHold[noteHTrav])*frameSpeed)+82) == WINDOW_HEIGHT && normalOrHold != -1){
+        if((24+((frameCount - noteHold[noteHTrav])*frameSpeed)+82) <= WINDOW_HEIGHT + 2 &&
+                (24+((frameCount - noteHold[noteHTrav])*frameSpeed)+82) >= WINDOW_HEIGHT && normalOrHold != -1){
             noteDistance = arbitValH;
             normalOrHold = 0;
-        }
-        //if the top note goes pressed without release then count is as a miss and remove the note
-        else if((24+((FrameCount - noteHold[noteHTrav])*frameSpeed)-82) == WINDOW_HEIGHT){
-            noteDistance = arbitValH;
-            normalOrHold = 0;
+            noteHold[noteHTrav] = placeholderValue;
             recOver++;
         }
     }
@@ -133,60 +133,60 @@ public class NoteManager {
         int[] downHold = game.downHold;
         //if any key is pressed then check its corresponding lane for notes
         if(input.wasPressed(Keys.LEFT)) {
-            notePressed(leftN, leftNTrav, leftH, leftHTrav, leftNormal, leftHold);
+            notePressed(leftN, leftNTrav, leftH, leftHTrav, leftNormal, leftHold, FrameCount);
         }
         else if(input.wasPressed(Keys.RIGHT)){
-            notePressed(rightN, rightNTrav, rightH, rightHTrav, rightNormal, rightHold);
+            notePressed(rightN, rightNTrav, rightH, rightHTrav, rightNormal, rightHold, FrameCount);
         }
         else if(input.wasPressed(Keys.UP)){
-            notePressed(upN, upNTrav, upH, upHTrav, upNormal, upHold);
+            notePressed(upN, upNTrav, upH, upHTrav, upNormal, upHold, FrameCount);
         }
         else if(input.wasPressed(Keys.DOWN)){
-            notePressed(downN, downNTrav, downH, downHTrav, downNormal, downHold);
+            notePressed(downN, downNTrav, downH, downHTrav, downNormal, downHold, FrameCount);
         }
         else if(input.wasReleased(Keys.LEFT) && normalOrHold == -1){
-            noteReleased(leftH, leftHTrav, leftHold);
+            noteReleased(leftH, leftHTrav, leftHold, FrameCount);
         }
         else if(input.wasReleased(Keys.RIGHT) && normalOrHold == -1){
-            noteReleased(rightH, rightHTrav, rightHold);
+            noteReleased(rightH, rightHTrav, rightHold, FrameCount);
         }
         else if(input.wasReleased(Keys.UP) && normalOrHold == -1){
-            noteReleased(upH, upHTrav, upHold);
+            noteReleased(upH, upHTrav, upHold, FrameCount);
         }
         else if(input.wasReleased(Keys.DOWN) && normalOrHold == -1){
-            noteReleased(downH, downHTrav, downHold);
+            noteReleased(downH, downHTrav, downHold, FrameCount);
         }
         //while there are still notes remaining in the array check the array at each frame
         while(leftN > leftNTrav){
-            noteNDraw(leftNTrav, leftNormal, LEFT_NOTE, leftX);
+            noteNDraw(leftNTrav, leftNormal, LEFT_NOTE, leftX, FrameCount);
             leftNTrav++;
         }
         while(rightN > rightNTrav){
-            noteNDraw(rightNTrav, rightNormal, RIGHT_NOTE, rightX);
+            noteNDraw(rightNTrav, rightNormal, RIGHT_NOTE, rightX, FrameCount);
             rightNTrav++;
         }
         while(upN > upNTrav){
-            noteNDraw(upNTrav, upNormal, UP_NOTE, upX);
+            noteNDraw(upNTrav, upNormal, UP_NOTE, upX, FrameCount);
             upNTrav++;
         }
         while(downN > downNTrav){
-            noteNDraw(downNTrav, downNormal, DOWN_NOTE, downX);
+            noteNDraw(downNTrav, downNormal, DOWN_NOTE, downX, FrameCount);
             downNTrav++;
         }
         while(leftH > leftHTrav){
-            noteHDraw(leftHTrav, leftHold, LEFT_NOTE_HOLD, leftX);
+            noteHDraw(leftHTrav, leftHold, LEFT_NOTE_HOLD, leftX, FrameCount);
             leftHTrav++;
         }
         while(rightH > rightHTrav){
-            noteHDraw(rightHTrav, rightHold, RIGHT_NOTE_HOLD, rightX);
+            noteHDraw(rightHTrav, rightHold, RIGHT_NOTE_HOLD, rightX, FrameCount);
             rightHTrav++;
         }
         while(upH > upHTrav){
-            noteHDraw(upHTrav, upHold, UP_NOTE_HOLD, upX);
+            noteHDraw(upHTrav, upHold, UP_NOTE_HOLD, upX, FrameCount);
             upHTrav++;
         }
         while(downH > downHTrav){
-            noteHDraw(downHTrav, downHold, DOWN_NOTE_HOLD, downX);
+            noteHDraw(downHTrav, downHold, DOWN_NOTE_HOLD, downX, FrameCount);
             downHTrav++;
         }
     }
