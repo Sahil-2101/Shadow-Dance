@@ -14,6 +14,8 @@ public class ShadowDance extends AbstractGame {
     private final NoteManager noteManager;
     private final SpecialLaneManager specialLaneManager;
     private final SpecialNoteManager specialNoteManager;
+    private final GuardianLaneManager guardianLaneManager;
+    private final GuardianNoteManager guardianNoteManager;
     //all the definitions
     private final static int WINDOW_WIDTH = 1024;
     private final static int WINDOW_HEIGHT = 768;
@@ -63,6 +65,8 @@ public class ShadowDance extends AbstractGame {
         noteManager = new NoteManager();
         specialLaneManager = new SpecialLaneManager();
         specialNoteManager = new SpecialNoteManager();
+        guardianLaneManager = new GuardianLaneManager();
+        guardianNoteManager = new GuardianNoteManager();
 
     }
 
@@ -335,6 +339,42 @@ public class ShadowDance extends AbstractGame {
             if (numRec == specialNoteManager.recOver) {
                 gameOver = true;
                 if (finalScore >= 400) {
+                    mainFont.drawString("CLEAR!", 350, 250);
+                } else {
+                    mainFont.drawString("TRY AGAIN", 300, 250);
+                }
+            }
+        }
+        else if (levelSelected == 3){
+            if(!gameOver){
+                FrameCount++;
+                guardianLaneManager.update(this);
+                scoreFont.drawString(("SCORE " + finalScore), 30, 30);
+                guardianNoteManager.update(input, this);
+                if (FrameCount <= freezeFrame + 450){
+                    doubleUpdateDistance(guardianNoteManager.noteDistance);
+                }
+                else {
+                    updateDistance(guardianNoteManager.noteDistance);
+                }
+                //print the message selected in updateDistance
+
+                if (FrameCount <= frameCatch + 30) {
+                    if (messageDisplay == 0) {
+                        successFont.drawString("PERFECT", 400, 250);
+                    } else if (messageDisplay == 1) {
+                        successFont.drawString("GOOD", 450, 250);
+                    } else if (messageDisplay == 2) {
+                        successFont.drawString("BAD", 460, 250);
+                    } else if (messageDisplay == 3) {
+                        successFont.drawString("MISS", 450, 250);
+                    }
+                }
+
+            }
+            if (numRec == guardianNoteManager.recOver) {
+                gameOver = true;
+                if (finalScore >= 350) {
                     mainFont.drawString("CLEAR!", 350, 250);
                 } else {
                     mainFont.drawString("TRY AGAIN", 300, 250);
