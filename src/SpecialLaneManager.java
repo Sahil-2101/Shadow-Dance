@@ -1,6 +1,7 @@
 import bagel.Image;
 
 public class SpecialLaneManager {
+    //initialize all variables
     private final static int laneY = 384;
     private final Image SPECIAL_IMAGE;
     private final Image RIGHT_IMAGE;

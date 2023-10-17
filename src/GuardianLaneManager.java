@@ -1,5 +1,6 @@
 import bagel.Image;
 public class GuardianLaneManager {
+    //initializing all the variables
     private final static int laneY = 384;
     private final Image SPECIAL_IMAGE;
     private final Image RIGHT_IMAGE;
@@ -8,6 +9,7 @@ public class GuardianLaneManager {
     private final int guardianX = 800;
     private final int guardianY = 600;
     public GuardianLaneManager(){
+        //initializing all the images
         SPECIAL_IMAGE = new Image("res/laneSpecial.png");
         RIGHT_IMAGE = new Image("res/laneRight.png");
         LEFT_IMAGE = new Image("res/laneLeft.png");

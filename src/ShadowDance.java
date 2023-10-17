@@ -308,14 +308,18 @@ public class ShadowDance extends AbstractGame {
                 } else {
                     mainFont.drawString("TRY AGAIN", 300, 250);
                 }
+                smallFont.drawString("PRESS SPACE TO RETURN TO LEVEL SELECTION.", 150, 500);
             }
         }
         else if (levelSelected == 2){
             if (!gameOver){
+                // count frame with each update
                 FrameCount++;
+                // calling update functions from both classes and printing the score
                 specialLaneManager.update(this);
                 scoreFont.drawString(("SCORE " + finalScore), 30, 30);
                 specialNoteManager.update(input, this);
+                // if double score is pressed
                 if (FrameCount <= freezeFrame + 450){
                     doubleUpdateDistance(specialNoteManager.noteDistance);
                 }
@@ -336,6 +340,7 @@ public class ShadowDance extends AbstractGame {
                     }
                 }
             }
+            // print final message
             if (numRec == specialNoteManager.recOver) {
                 gameOver = true;
                 if (finalScore >= 400) {
@@ -343,14 +348,17 @@ public class ShadowDance extends AbstractGame {
                 } else {
                     mainFont.drawString("TRY AGAIN", 300, 250);
                 }
+                smallFont.drawString("PRESS SPACE TO RETURN TO LEVEL SELECTION.", 100, 500);
             }
         }
         else if (levelSelected == 3){
             if(!gameOver){
+                // count frames with each update
                 FrameCount++;
                 guardianLaneManager.update(this);
                 scoreFont.drawString(("SCORE " + finalScore), 30, 30);
                 guardianNoteManager.update(input, this);
+                //if double score is pressed
                 if (FrameCount <= freezeFrame + 450){
                     doubleUpdateDistance(guardianNoteManager.noteDistance);
                 }
@@ -372,6 +380,7 @@ public class ShadowDance extends AbstractGame {
                 }
 
             }
+            //print final message
             if (numRec == guardianNoteManager.recOver) {
                 gameOver = true;
                 if (finalScore >= 350) {
@@ -379,7 +388,18 @@ public class ShadowDance extends AbstractGame {
                 } else {
                     mainFont.drawString("TRY AGAIN", 300, 250);
                 }
+                smallFont.drawString("PRESS SPACE TO RETURN TO LEVEL SELECTION.", 100, 500);
             }
+        }
+        //if space is pressed then restart from start
+        if(input.wasPressed(Keys.SPACE)){
+            showInstructions = true;
+            gameOver = false;
+            finalScore = 0;
+            FrameCount = 0;
+            noteManager.recOver = 0;
+            guardianNoteManager.recOver = 0;
+            messageDisplay = -1;
         }
 
     }

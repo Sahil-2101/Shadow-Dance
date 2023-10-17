@@ -1,4 +1,6 @@
+import bagel.DrawOptions;
 import bagel.Image;
+import bagel.util.Vector2;
 import bagel.Input;
 import bagel.Keys;
 import java.util.Random;
@@ -29,14 +31,23 @@ public class GuardianNoteManager {
     public int lefthc = 0;
     public int righthc = 0;
     public int recOver = 0, noteDistance, frameSpeed = 2, chosenS = 0, minFrame = 1000000, chosenSD = 0, frameAct = -30;
-    private int enemyAdder = 1, minX, minY;
+    private int minX, minY, projT = 0, eA = 0;
+    private int[] enemyAdder;
     private double enemyDistance = 200;
+    private Vector2 position, target;
+    double minDist = 100000000;
+    int mindist;
+    Vector2 displacement;
+    double distance;
+    double movement;
     Random random = new Random();
 
     public GuardianNoteManager(){
         sNoteManager = new NoteManager();
         enemyX = new int[100];
         enemyY = new int[100];
+        enemyAdder = new int[100];
+        //loading all the images
         LEFT_NOTE = new Image("res/noteLeft.png");
         RIGHT_NOTE = new Image("res/noteRight.png");
         BOMB_NOTE = new Image("res/noteBomb.png");
@@ -49,13 +60,16 @@ public class GuardianNoteManager {
         ARROW_IMAGE = new Image("res/arrow.png");
         enemyX[eX] = random.nextInt(800)+100;
         enemyY[eY] = random.nextInt(400)+100;
+        enemyAdder[eA] = 1;
         eX++;
         eY++;
+        eA++;
     }
 
     public void guardianSpecialNotePressed(int bombN, int slowN, int speedN, int doubleN, int sBombTrav, int slowTrav,
                                    int speedTrav, int doubleTrav, int[] doubleScoreS, int[] bombS,
                                    int[] slowDownS, int[] speedUpS, int frameCount){
+        //checking all the bomb notes
         while(sBombTrav < bombN){
             if(bombS[sBombTrav] <= frameCount &&
                     ((100+((frameCount - bombS[sBombTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
@@ -66,6 +80,7 @@ public class GuardianNoteManager {
             }
             sBombTrav++;
         }
+        //checking all the slow notes
         while(slowTrav < slowN){
             if(slowDownS[slowTrav] <= frameCount &&
                     ((100+((frameCount - slowDownS[slowTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
@@ -78,6 +93,7 @@ public class GuardianNoteManager {
             }
             slowTrav++;
         }
+        //checking all the speed notes
         while(speedTrav < speedN){
             if(speedUpS[speedTrav] <= frameCount &&
                     ((100+((frameCount - speedUpS[speedTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
@@ -90,6 +106,7 @@ public class GuardianNoteManager {
             }
             speedTrav++;
         }
+        //checking all the double notes
         while(doubleTrav < doubleN){
             if(doubleScoreS[doubleTrav] <= frameCount &&
                     ((100+((frameCount - doubleScoreS[doubleTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
@@ -105,6 +122,7 @@ public class GuardianNoteManager {
         if (chosenSD < 0){
             chosenSD *= -1;
         }
+        //if the note is within 50 frames then consider it activated
         if (chosenSD <= 50) {
             if (chosenS == 1) {
                 bombS[sBombTrav] = placeholderValue;
@@ -136,6 +154,7 @@ public class GuardianNoteManager {
 
     public void guardianBombPressed(int noteNC, int noteNCTrav, int[] noteNormal, int laneNC, int laneNCTrav,
                             int[] laneNormal, int noteHC, int noteHCTrav, int[] noteHold, int frameCount){
+        //check if the bomb is on screen and then it is considered activated
         while(noteNC > noteNCTrav) {
             if (noteNormal[noteNCTrav] <= frameCount &&
                     ((100 + ((frameCount - noteNormal[noteNCTrav]) * frameSpeed)) <= WINDOW_HEIGHT)) {
@@ -153,6 +172,7 @@ public class GuardianNoteManager {
     }
 
     public void guardianBombDraw(int noteNTrav, int[] noteNormal, Image dirNote, int noteX, int frameCount) {
+        //if the frame is in the window then print the image of the note
         if (noteNormal[noteNTrav] <= frameCount &&
                 ((100 + ((frameCount - noteNormal[noteNTrav]) * frameSpeed)) <= WINDOW_HEIGHT)) {
             dirNote.draw(noteX, 100 + ((frameCount - noteNormal[noteNTrav]) * frameSpeed));
@@ -166,6 +186,7 @@ public class GuardianNoteManager {
     }
 
     public void guardianNoteDestroy(int[] notesAll, int nTrav, int nMax, int frameCount){
+        //all the notes present in the window are cleared if bomb is pressed
         while(nMax > nTrav){
             if(notesAll[nTrav] <= frameCount &&
                     ((100+((frameCount - notesAll[nTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
@@ -178,11 +199,11 @@ public class GuardianNoteManager {
 
     public void shootProj(int[] enemyx, int[] enemyy, int eTrav){
         int eT = 0;
-        double minDist = 100000000;
+        minDist = 100000000;
         double dist;
         int HD;
         int WD;
-
+        //find the closest enemy to the guardian
         while(eT < eTrav){
             WD = guardianX - enemyx[eT];
             HD = guardianY - enemyy[eT];
@@ -195,14 +216,18 @@ public class GuardianNoteManager {
             dist = Math.sqrt((HD*HD) + (WD+WD));
             if(dist < minDist){
                 minDist = dist;
+                mindist = eT;
                 minX = enemyx[eT];
                 minY = enemyy[eT];
             }
             eT++;
         }
+        position = new Vector2(guardianX, guardianY);
+        target = new Vector2(minX, minY);
     }
 
     public void update(Input input, ShadowDance game){
+        //initializing all the variables locally
         int leftNTrav = 0, leftHTrav = 0, rightNTrav = 0, rightHTrav = 0,
                 sBombTrav = 0, slowTrav = 0, speedTrav = 0, doubleTrav = 0, leftBTrav = 0, rightBTrav = 0;
         int leftN = game.leftN, leftH = game.leftH, rightN = game.rightN, rightH = game.rightH,
@@ -231,23 +256,25 @@ public class GuardianNoteManager {
         int HeightD = 0;
         int WidthD = 0;
         int eXTrav = 0;
-
+        //every 600 frames create a new enemy
         if(FrameCount%600 == 0){
             enemyX[eX] = random.nextInt(800)+100;
             enemyY[eY] = random.nextInt(400)+100;
+            enemyAdder[eA] = 1;
             eX++;
             eY++;
+            eA++;
         }
-
+        //everytime an enemy hits the sides of the window it starts moving the other way
         while(eXTrav < eX) {
             if (enemyX[eXTrav] == WINDOW_WIDTH) {
-                enemyAdder = -1;
+                enemyAdder[eXTrav] = -1;
             } else if (enemyX[eXTrav] == 0) {
-                enemyAdder = 1;
+                enemyAdder[eXTrav] = 1;
             }
 
             ENEMY_IMAGE.draw(enemyX[eXTrav], enemyY[eXTrav]);
-            enemyX[eXTrav] += enemyAdder;
+            enemyX[eXTrav] += enemyAdder[eXTrav];
             eXTrav++;
         }
         eXTrav = 0;
@@ -322,6 +349,7 @@ public class GuardianNoteManager {
                         rightH, rightHTrav, rightHold, FrameCount);
             }
         }
+        //if space is pressed then check for special notes
         if(input.wasPressed(Keys.SPACE)){
             guardianSpecialNotePressed(bombN, slowN, speedN, doubleN, sBombTrav, slowTrav, speedTrav, doubleTrav,
                     doubleScoreS, bombS, slowDownS, speedUpS, FrameCount);
@@ -329,9 +357,32 @@ public class GuardianNoteManager {
                 game.finalScore += 15;
             }
         }
+        //if left shift is pressed then shoot an arrow
         if(input.wasPressed(Keys.LEFT_SHIFT)){
             shootProj(enemyX, enemyY, eX);
+            projT = 1;
         }
+        if(projT == 1){
+            //check the angle and the velocity of the arrow
+            displacement = target.sub(position);
+            distance = displacement.length();
+            movement = 6;
+            ARROW_IMAGE.draw(position.x, position.y,
+                    new DrawOptions().setRotation(Math.atan2((target.y - position.y), (target.x - position.x))));
+            if(distance <= movement){
+                position = target;
+                if(minX - enemyX[mindist] <= 62){
+                    enemyX[mindist] = placeholderValue;
+                    enemyY[mindist] = placeholderValue;
+                }
+                projT = 0;
+            }
+            else{
+                displacement = displacement.normalised();
+                position = position.add(displacement.mul(movement));
+            }
+        }
+        //if keys are released then check if the note was a hold note
         if(input.wasReleased(Keys.LEFT) && normalOrHold == -1){
             sNoteManager.noteReleased(leftH, leftHTrav, leftHold, FrameCount);
             noteDistance = sNoteManager.noteDistance;
@@ -348,10 +399,11 @@ public class GuardianNoteManager {
                 lefthc = 0;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(leftN > leftNTrav){
             sNoteManager.noteNDraw(leftNTrav, leftNormal, LEFT_NOTE, leftX, FrameCount);
             while(eXTrav < eX) {
-                HeightD = leftNormal[leftNTrav] - FrameCount + 100 - enemyY[eXTrav];
+                HeightD = (FrameCount - leftNormal[leftNTrav])*(sNoteManager.frameSpeed) + 100 - enemyY[eXTrav];
                 WidthD = leftX - enemyX[eXTrav];
                 if (HeightD < 0) {
                     HeightD *= -1;
@@ -374,10 +426,11 @@ public class GuardianNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(rightN > rightNTrav){
             sNoteManager.noteNDraw(rightNTrav, rightNormal, RIGHT_NOTE, rightX, FrameCount);
             while(eXTrav < eX) {
-                HeightD = rightNormal[rightNTrav] - FrameCount + 100 - enemyY[eXTrav];
+                HeightD = (FrameCount - rightNormal[rightNTrav])*(sNoteManager.frameSpeed) + 100 - enemyY[eXTrav];
                 WidthD = rightX - enemyX[eXTrav];
                 if (HeightD < 0) {
                     HeightD *= -1;
@@ -400,25 +453,9 @@ public class GuardianNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(bombN > sBombTrav){
             sNoteManager.noteNDraw(sBombTrav, bombS, BOMB_NOTE, specialX, FrameCount);
-            while(eXTrav < eX) {
-                HeightD = bombS[sBombTrav] - FrameCount + 100 - enemyY[eXTrav];
-                WidthD = specialX - enemyX[eXTrav];
-                if (HeightD < 0) {
-                    HeightD *= -1;
-                }
-                if (WidthD < 0) {
-                    WidthD *= -1;
-                }
-                enemyDistance = Math.sqrt((HeightD * HeightD) + (WidthD * WidthD));
-                if (enemyDistance < 105) {
-                    bombS[sBombTrav] = placeholderValue;
-                    recOver++;
-                }
-                eXTrav++;
-            }
-            eXTrav = 0;
             sBombTrav++;
             if(sNoteManager.noteDistance == arbitVal){
                 noteDistance = 0;
@@ -428,23 +465,6 @@ public class GuardianNoteManager {
         }
         while(speedN > speedTrav){
             sNoteManager.noteNDraw(speedTrav, speedUpS, SPEED_NOTE, specialX, FrameCount);
-            while(eXTrav < eX) {
-                HeightD = speedUpS[speedTrav] - FrameCount + 100 - enemyY[eXTrav];
-                WidthD = specialX - enemyX[eXTrav];
-                if (HeightD < 0) {
-                    HeightD *= -1;
-                }
-                if (WidthD < 0) {
-                    WidthD *= -1;
-                }
-                enemyDistance = Math.sqrt((HeightD * HeightD) + (WidthD * WidthD));
-                if (enemyDistance < 105) {
-                    speedUpS[speedTrav] = placeholderValue;
-                    recOver++;
-                }
-                eXTrav++;
-            }
-            eXTrav = 0;
             speedTrav++;
             if(sNoteManager.noteDistance == arbitVal){
                 noteDistance = 0;
@@ -452,25 +472,9 @@ public class GuardianNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(slowN > slowTrav){
             sNoteManager.noteNDraw(slowTrav, slowDownS, SLOW_NOTE, specialX, FrameCount);
-            while(eXTrav < eX) {
-                HeightD = slowDownS[slowTrav] - FrameCount + 100 - enemyY[eXTrav];
-                WidthD = specialX - enemyX[eXTrav];
-                if (HeightD < 0) {
-                    HeightD *= -1;
-                }
-                if (WidthD < 0) {
-                    WidthD *= -1;
-                }
-                enemyDistance = Math.sqrt((HeightD * HeightD) + (WidthD * WidthD));
-                if (enemyDistance < 105) {
-                    slowDownS[slowTrav] = placeholderValue;
-                    recOver++;
-                }
-                eXTrav++;
-            }
-            eXTrav = 0;
             slowTrav++;
             if(sNoteManager.noteDistance == arbitVal){
                 noteDistance = 0;
@@ -478,25 +482,9 @@ public class GuardianNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(doubleN > doubleTrav){
             sNoteManager.noteNDraw(doubleTrav, doubleScoreS, DOUBLE_NOTE, specialX, FrameCount);
-            while(eXTrav < eX) {
-                HeightD = doubleScoreS[doubleTrav] - FrameCount + 100 - enemyY[eXTrav];
-                WidthD = specialX - enemyX[eXTrav];
-                if (HeightD < 0) {
-                    HeightD *= -1;
-                }
-                if (WidthD < 0) {
-                    WidthD *= -1;
-                }
-                enemyDistance = Math.sqrt((HeightD * HeightD) + (WidthD * WidthD));
-                if (enemyDistance < 105) {
-                    doubleScoreS[doubleTrav] = placeholderValue;
-                    recOver++;
-                }
-                eXTrav++;
-            }
-            eXTrav = 0;
             doubleTrav++;
             if(sNoteManager.noteDistance == arbitVal){
                 noteDistance = 0;
@@ -504,10 +492,11 @@ public class GuardianNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(leftH > leftHTrav){
             sNoteManager.noteHDraw(leftHTrav, leftHold, LEFT_NOTE_HOLD, leftX, FrameCount);
             while(eXTrav < eX) {
-                HeightD = leftHold[leftHTrav] - FrameCount + 100 - enemyY[eXTrav];
+                HeightD = (FrameCount - leftHold[leftHTrav])*(sNoteManager.frameSpeed) + 100 - enemyY[eXTrav];
                 WidthD = leftX - enemyX[eXTrav];
                 if (HeightD < 0) {
                     HeightD *= -1;
@@ -530,10 +519,11 @@ public class GuardianNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(rightH > rightHTrav){
             sNoteManager.noteHDraw(rightHTrav, rightHold, RIGHT_NOTE_HOLD, rightX, FrameCount);
             while(eXTrav < eX) {
-                HeightD = rightHold[rightHTrav] - FrameCount + 100 - enemyY[eXTrav];
+                HeightD = (FrameCount - rightHold[rightHTrav])*(sNoteManager.frameSpeed) + 100 - enemyY[eXTrav];
                 WidthD = rightX - enemyX[eXTrav];
                 if (HeightD < 0) {
                     HeightD *= -1;
@@ -556,14 +546,17 @@ public class GuardianNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(leftB > leftBTrav){
             guardianBombDraw(leftBTrav, leftBomb, BOMB_NOTE, leftX, FrameCount);
             leftBTrav++;
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(rightB > rightBTrav){
             guardianBombDraw(rightBTrav, rightBomb, BOMB_NOTE, rightX, FrameCount);
             rightBTrav++;
         }
+        //print the special messages
         if (FrameCount <= frameAct + 30) {
             if (chosenS == 1) {
                 game.successFont.drawString("LANE CLEAR", 400, 250);

@@ -40,6 +40,7 @@ public class SpecialNoteManager {
     public void specialNotePressed(int bombN, int slowN, int speedN, int doubleN, int sBombTrav, int slowTrav,
                                    int speedTrav, int doubleTrav, int[] doubleScoreS, int[] bombS,
                                    int[] slowDownS, int[] speedUpS, int frameCount){
+        //checking all the bomb notes
         while(sBombTrav < bombN){
             if(bombS[sBombTrav] <= frameCount &&
                     ((100+((frameCount - bombS[sBombTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
@@ -50,6 +51,7 @@ public class SpecialNoteManager {
             }
             sBombTrav++;
         }
+        //checking all the slow notes
         while(slowTrav < slowN){
             if(slowDownS[slowTrav] <= frameCount &&
                     ((100+((frameCount - slowDownS[slowTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
@@ -62,6 +64,7 @@ public class SpecialNoteManager {
             }
             slowTrav++;
         }
+        //checking all the speed notes
         while(speedTrav < speedN){
             if(speedUpS[speedTrav] <= frameCount &&
                     ((100+((frameCount - speedUpS[speedTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
@@ -74,6 +77,7 @@ public class SpecialNoteManager {
             }
             speedTrav++;
         }
+        //checking all the double notes
         while(doubleTrav < doubleN){
             if(doubleScoreS[doubleTrav] <= frameCount &&
                     ((100+((frameCount - doubleScoreS[doubleTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
@@ -86,9 +90,11 @@ public class SpecialNoteManager {
             }
             doubleTrav++;
         }
+        //if chosenSD is negative then turn it into positive
         if (chosenSD < 0){
             chosenSD *= -1;
         }
+        //if and only if the distance is less than 50 then the note is activated
         if (chosenSD <= 50) {
             if (chosenS == 1) {
                 bombS[sBombTrav] = placeholderValue;
@@ -120,6 +126,7 @@ public class SpecialNoteManager {
 
     public void bombPressed(int noteNC, int noteNCTrav, int[] noteNormal, int laneNC, int laneNCTrav,
                             int[] laneNormal, int noteHC, int noteHCTrav, int[] noteHold, int frameCount){
+        //check if the bomb is on screen and then it is considered activated
         while(noteNC > noteNCTrav) {
             if (noteNormal[noteNCTrav] <= frameCount &&
                     ((100 + ((frameCount - noteNormal[noteNCTrav]) * frameSpeed)) <= WINDOW_HEIGHT)) {
@@ -137,11 +144,12 @@ public class SpecialNoteManager {
     }
 
     public void bombDraw(int noteNTrav, int[] noteNormal, Image dirNote, int noteX, int frameCount) {
+        //if the frame is in the window then print the image of the note
         if (noteNormal[noteNTrav] <= frameCount &&
                 ((100 + ((frameCount - noteNormal[noteNTrav]) * frameSpeed)) <= WINDOW_HEIGHT)) {
             dirNote.draw(noteX, 100 + ((frameCount - noteNormal[noteNTrav]) * frameSpeed));
         }
-        //if the note goes out of the window height then remove the note and count it as a miss
+        //if the note goes out of the window height then remove the note
         if((100+((frameCount - noteNormal[noteNTrav])*frameSpeed) <= WINDOW_HEIGHT + 2) &&
                 (100+((frameCount - noteNormal[noteNTrav])*frameSpeed) >= WINDOW_HEIGHT)){
             noteNormal[noteNTrav] = placeholderValue;
@@ -150,6 +158,7 @@ public class SpecialNoteManager {
     }
 
     public void noteDestroy(int[] notesAll, int nTrav, int nMax, int frameCount){
+        //all the notes present in the window are cleared if bomb is pressed
         while(nMax > nTrav){
             if(notesAll[nTrav] <= frameCount &&
                     ((100+((frameCount - notesAll[nTrav])*frameSpeed)) <= WINDOW_HEIGHT)){
@@ -193,7 +202,7 @@ public class SpecialNoteManager {
         int[] rightBomb = game.rightBomb;
         int[] downBomb = game.downBomb;
 
-        //if any key is pressed then check its corresponding lane for notes
+        //if left key is pressed then check its corresponding lane for notes and check if the note is normal or bomb
         if(input.wasPressed(Keys.LEFT)) {
             while(leftNTrav < leftN){
                 if(leftNormal[leftNTrav] >= 0 && leftNormal[leftNTrav] < minVal){
@@ -225,6 +234,7 @@ public class SpecialNoteManager {
                         leftH, leftHTrav, leftHold, FrameCount);
             }
         }
+        //if right key is pressed then check its corresponding lane for notes and check if the note is normal or bomb
         if(input.wasPressed(Keys.RIGHT)){
             while(rightNTrav < rightN){
                 if(rightNormal[rightNTrav] >= 0 && rightNormal[rightNTrav] < minVal){
@@ -256,6 +266,7 @@ public class SpecialNoteManager {
                         rightH, rightHTrav, rightHold, FrameCount);
             }
         }
+        //if space key is pressed then check its corresponding lane for notes
         if(input.wasPressed(Keys.SPACE)){
             specialNotePressed(bombN, slowN, speedN, doubleN, sBombTrav, slowTrav, speedTrav, doubleTrav,
                     doubleScoreS, bombS, slowDownS, speedUpS, FrameCount);
@@ -263,7 +274,7 @@ public class SpecialNoteManager {
                 game.finalScore += 15;
             }
         }
-
+        //if down key is pressed then check its corresponding lane for notes and check if the note is normal or bomb
         if(input.wasPressed(Keys.DOWN)){
             while(downNTrav < downN){
                 if(downNormal[downNTrav] >= 0 && downNormal[downNTrav] < minVal){
@@ -295,14 +306,17 @@ public class SpecialNoteManager {
                         downH, downHTrav, downHold, FrameCount);
             }
         }
+        //if left key is released then check if the key pressed was a hold note and count score accordingly
         if(input.wasReleased(Keys.LEFT) && normalOrHold == -1){
             sNoteManager.noteReleased(leftH, leftHTrav, leftHold, FrameCount);
             noteDistance = sNoteManager.noteDistance;
         }
+        //if right key is released then check if the key pressed was a hold note and count score accordingly
         if(input.wasReleased(Keys.RIGHT) && normalOrHold == -1){
             sNoteManager.noteReleased(rightH, rightHTrav, rightHold, FrameCount);
             noteDistance = sNoteManager.noteDistance;
         }
+        //if down key is released then check if the key pressed was a hold note and count score accordingly
         if(input.wasReleased(Keys.DOWN) && normalOrHold == -1){
             sNoteManager.noteReleased(downH, downHTrav, downHold, FrameCount);
             noteDistance = sNoteManager.noteDistance;
@@ -317,6 +331,7 @@ public class SpecialNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(rightN > rightNTrav){
             sNoteManager.noteNDraw(rightNTrav, rightNormal, RIGHT_NOTE, rightX, FrameCount);
             rightNTrav++;
@@ -326,6 +341,7 @@ public class SpecialNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(bombN > sBombTrav){
             sNoteManager.noteNDraw(sBombTrav, bombS, BOMB_NOTE, specialX, FrameCount);
             sBombTrav++;
@@ -335,6 +351,7 @@ public class SpecialNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(speedN > speedTrav){
             sNoteManager.noteNDraw(speedTrav, speedUpS, SPEED_NOTE, specialX, FrameCount);
             speedTrav++;
@@ -344,6 +361,7 @@ public class SpecialNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(slowN > slowTrav){
             sNoteManager.noteNDraw(slowTrav, slowDownS, SLOW_NOTE, specialX, FrameCount);
             slowTrav++;
@@ -353,6 +371,7 @@ public class SpecialNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(doubleN > doubleTrav){
             sNoteManager.noteNDraw(doubleTrav, doubleScoreS, DOUBLE_NOTE, specialX, FrameCount);
             doubleTrav++;
@@ -362,6 +381,7 @@ public class SpecialNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(downN > downNTrav){
             sNoteManager.noteNDraw(downNTrav, downNormal, DOWN_NOTE, downX, FrameCount);
             downNTrav++;
@@ -371,6 +391,7 @@ public class SpecialNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(leftH > leftHTrav){
             sNoteManager.noteHDraw(leftHTrav, leftHold, LEFT_NOTE_HOLD, leftX, FrameCount);
             leftHTrav++;
@@ -380,6 +401,7 @@ public class SpecialNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(rightH > rightHTrav){
             sNoteManager.noteHDraw(rightHTrav, rightHold, RIGHT_NOTE_HOLD, rightX, FrameCount);
             rightHTrav++;
@@ -389,6 +411,7 @@ public class SpecialNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(downH > downHTrav){
             sNoteManager.noteHDraw(downHTrav, downHold, DOWN_NOTE_HOLD, downX, FrameCount);
             downHTrav++;
@@ -398,19 +421,23 @@ public class SpecialNoteManager {
                 recOver++;
             }
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(leftB > leftBTrav){
             bombDraw(leftBTrav, leftBomb, BOMB_NOTE, leftX, FrameCount);
             leftBTrav++;
         }
+        //while there are still notes remaining in the array check the array at each frame
         while(rightB > rightBTrav){
             bombDraw(rightBTrav, rightBomb, BOMB_NOTE, rightX, FrameCount);
             rightBTrav++;
         }
+
+        //while there are still notes remaining in the array check the array at each frame
         while(downB > downBTrav){
             bombDraw(downBTrav, downBomb, BOMB_NOTE, downX, FrameCount);
             downBTrav++;
         }
-
+        //print special messages
         if (FrameCount <= frameAct + 30) {
             if (chosenS == 1) {
                 game.successFont.drawString("LANE CLEAR", 400, 250);
