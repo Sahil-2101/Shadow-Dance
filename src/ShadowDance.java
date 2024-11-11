@@ -4,8 +4,6 @@ import java.io.FileReader;
 import java.io.IOException;
 
 /**
- * Skeleton Code for SWEN20003 Project 1, Semester 2, 2023
- * Please enter your name below
  * @author Sahil Khatri
  */
 public class ShadowDance extends AbstractGame {
